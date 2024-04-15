@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tax Calculator</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <style>
+    .info-circle, .warning-circle {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 24px;
+      color: black;
+      font-size: 15px;
+    }
+    .info-circle {
+      background-color: white;
+    }
+    .warning-circle {
+      background-color: white; 
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container my-4">
+    <h1 class="text-center">Tax Calculator</h1>
+  </div>
+  <div id="Modal" class="modal my-5">
+    <div class="row justify-content-center align-items-center">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <div class="d-block text-center">
+            <strong>Your Overall Income will be : </strong><br><strong class="h3"><span id="tax"></span></strong> <br>after tax deductions.
+          </div>
+          <div class="d-block">
+            <button class="btn btn-dark btn-block" id="close" onclick="hideModal()">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <form onsubmit="CalcTax(); return false;">
+              <div class="form-group">
+                <label for="grossAnnualIncome">
+                  <strong>Enter gross annual income (in Lakhs)</strong>
+                  <span
+                    class="text-info"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    title="Gross annual income is your total salary in a year before any deductions."
+                  ><span class="info-circle">?</span></span>
+                </label>
+                <div class="input-group">
+                  <input
+                    type="number"
+                    step="0.01"
+                    class="form-control"
+                    id="gross-annual-income"
+                    placeholder="Enter gross annual income"
+                    aria-describedby="gross-annual-income-tooltip"
+                    oninput="clearError('gross-annual-income-tooltip')"
+                  />
+                  <div class="input-group-append">
+                    <span
+                      class="input-group-text"
+                      id="gross-annual-income-tooltip"
+                      data-toggle="tooltip"
+                      data-placement="right"
+                      title="Please enter numbers only"
+                    >
+                      <span class="warning-circle">!</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="extraIncome">
+                  <strong>Enter extra income (in Lakhs)</strong>
+                  <span
+                    class="text-info"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    title="Extra income includes any additional earnings like bonuses or freelance work."
+                  ><span class="info-circle">?</span></span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  class="form-control"
+                  id="extraIncome"
+                  placeholder="Enter extra income from other sources"
+                  oninput="clearError('extra-income-tooltip')"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="age">
+                  <strong>Select your age group</strong>
+                  <span
+                    class="text-info"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    title="Your age group can affect the tax rates applicable to you."
+                  ><span class="info-circle">?</span></span>
+                </label>
+                <select class="form-control" id="age">
+                  <option value="<40">&lt; 40</option>
+                  <option value="40-60">&ge; 40 &lt; 60</option>
+                  <option value="≥60">&ge; 60</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="deductions">
+                  <strong>Enter total applicable deductions (in Lakhs)</strong>
+                  <span
+                    class="text-info"
+                    data-toggle="tooltip"
+                    data-placement="right"
+                    title="This includes deductions for expenses like medical, investments, etc."
+                  ><span class="info-circle">?</span></span>
+                </label>
+                <input type="number" step="0.01" class="form-control" id="deductions" placeholder="Add total applicable deductions" oninput="clearError('deductions-tooltip')" />
+              </div>
+              <input type="submit" value="Submit" class="btn btn-primary btn-block" />
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <script>
+   $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+
+  function calculateTax(income, extraIncome, deductions, age) {
+    var taxableIncome = (income + extraIncome - deductions) * 100000; 
+    var taxAmount = 0;
+
+    if (taxableIncome <= 800000) {
+      var overallIncome = taxableIncome;
+    } else {
+      var excessIncome = taxableIncome - 800000; 
+
+      if (age === "<40") {
+        taxAmount = excessIncome * 0.3;
+      } else if (age === "40-60") {
+        taxAmount = excessIncome * 0.4;
+      } else if (age === "≥60") {
+        taxAmount = excessIncome * 0.1;
+      } else {
+        taxAmount = excessIncome * 0.5; 
+      }
+      var overallIncome = taxableIncome - taxAmount;
+    }
+    var modalContent = document.getElementById("tax");
+    modalContent.innerHTML = " " + (overallIncome / 100000).toFixed(2) + " Lakhs ";
+    $("#Modal").modal("show");
+  }
+
+  function CalcTax() {
+    var income = parseFloat(document.getElementById("gross-annual-income").value);
+    var extraIncome = parseFloat(document.getElementById("extraIncome").value);
+    var age = document.getElementById("age").value;
+    var deductions = parseFloat(document.getElementById("deductions").value);
+
+    if (isNaN(income) || isNaN(extraIncome) || isNaN(deductions)) {
+      alert("Please fill all fields with valid numbers.");
+      return;
+    }
+
+    calculateTax(income, extraIncome, deductions, age);
+  }
+
+  function clearError(id) {
+    var tooltip = document.getElementById(id);
+    var errorIcon = tooltip.querySelector('.warning-circle');
+
+    if (errorIcon) {
+      errorIcon.classList.remove('d-none'); 
+    }
+  }
+
+  function hideModal() {
+    $("#Modal").modal("hide");
+  }
+  </script>
+</body>
+</html>
